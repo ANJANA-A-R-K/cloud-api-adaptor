@@ -7,6 +7,28 @@ elif [ "${ARCH}" != "s390x" ]; then
     exit 0
 fi
 echo "Building SE podvm image for $ARCH"
+
+required_files=("DigiCertCA.crt" "ibm-z-host-key-gen2.crl" "ibm-z-host-key-signing-gen2.crt")
+missing_files=()
+
+for file in "${required_files[@]}"; do
+    if [[ ! -f "/tmp/files/$file" ]]; then
+        missing_files+=("$file")
+    else
+        echo "Found required file: /tmp/files/$file"
+    fi
+done
+
+if [[ ${#missing_files[@]} -gt 0 ]]; then
+    echo "The following required files are missing: ${missing_files[@]}"
+    echo "Please download the missing files to the 'files' folder."
+    exit 1
+fi
+
+signcert="/tmp/files/DigiCertCA.crt"
+cacert="/tmp/files/ibm-z-host-key-gen2.crl"
+crl="/tmp/files/ibm-z-host-key-signing-gen2.crt"
+
 echo "Finding host key files"
 host_keys=""
 rm /tmp/files/.dummy.crt || true
@@ -190,13 +212,10 @@ echo "Generating an IBM Secure Execution image"
 echo "Creating SE boot image"
 export SE_PARMLINE="root=/dev/mapper/$LUKS_NAME rd.auto=1 rd.retry=30 console=ttysclp0 quiet panic=0 rd.shell=0 blacklist=virtio_rng swiotlb=262144"
 sudo -E bash -c 'echo "${SE_PARMLINE}" > ${dst_mnt}/boot/parmfile'
-sudo -E /usr/bin/genprotimg \
-    -i ${dst_mnt}/boot/${KERNEL_FILE} \
-    -r ${dst_mnt}/boot/${INITRD_FILE} \
-    -p ${dst_mnt}/boot/parmfile \
-    --no-verify \
-    ${host_keys} \
-    -o ${dst_mnt}/boot-se/se.img
+sudo -E /usr/bin/genprotimg 
+sudo -E /usr/bin/genprotimg ${host_keys} \
+--output=${dst_mnt}/boot-se/se.img --image=${dst_mnt}/boot/${KERNEL_FILE} --ramdisk=${dst_mnt}/boot/${INITRD_FILE} \
+--cert=${cacert} --cert=${signcert} --crl=${crl} --parmfile=${dst_mnt}/boot/parmfile
 
 # exit and throw an error if no se image was created
 [ ! -e ${dst_mnt}/boot-se/se.img ] && exit 1
