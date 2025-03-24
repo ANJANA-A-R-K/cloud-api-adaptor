@@ -8,7 +8,7 @@ elif [ "${ARCH}" != "s390x" ]; then
 fi
 echo "Building SE podvm image for $ARCH"
 
-required_files=("DigiCertCA.crt" "ibm-z-host-key-gen2.crl" "ibm-z-host-key-signing-gen2.crt")
+required_files=("DigiCertCA.crt" "ibm-z-host-key-gen2.crl" "ibm-z-host-key-signing-gen2.crt" "HKD.crt")
 missing_files=()
 
 for file in "${required_files[@]}"; do
@@ -28,16 +28,8 @@ fi
 signcert="/tmp/files/ibm-z-host-key-signing-gen2.crt"
 cacert="/tmp/files/DigiCertCA.crt"
 crl="/tmp/files/ibm-z-host-key-gen2.crl"
-
-echo "Finding host key files"
-host_keys=""
+host_keys="/tmp/files/HKD.crt"
 rm /tmp/files/.dummy.crt || true
-for i in /tmp/files/*.crt; do
-    [[ -f "$i" ]] || break
-    echo "found host key file: \"${i}\""
-    host_keys+="-k ${i} "
-done
-[[ -z $host_keys ]] && echo "Didn't find host key files, please download host key files to 'files' folder " && exit 1
 
 if [ "${PODVM_DISTRO}" = "rhel" ]; then
     export LANG=C.UTF-8
@@ -213,7 +205,7 @@ echo "Creating SE boot image"
 export SE_PARMLINE="root=/dev/mapper/$LUKS_NAME rd.auto=1 rd.retry=30 console=ttysclp0 quiet panic=0 rd.shell=0 blacklist=virtio_rng swiotlb=262144"
 sudo -E bash -c 'echo "${SE_PARMLINE}" > ${dst_mnt}/boot/parmfile'
 sudo -E /usr/bin/genprotimg
-sudo -E /usr/bin/genprotimg ${host_keys} \
+sudo -E /usr/bin/genprotimg --host-key-document=${host_keys} \
 --output=${dst_mnt}/boot-se/se.img --image=${dst_mnt}/boot/${KERNEL_FILE} --ramdisk=${dst_mnt}/boot/${INITRD_FILE} \
 --cert=${cacert} --cert=${signcert} --crl=${crl} --parmfile=${dst_mnt}/boot/parmfile
 
