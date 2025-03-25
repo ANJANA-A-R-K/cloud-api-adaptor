@@ -204,7 +204,6 @@ echo "Generating an IBM Secure Execution image"
 echo "Creating SE boot image"
 export SE_PARMLINE="root=/dev/mapper/$LUKS_NAME rd.auto=1 rd.retry=30 console=ttysclp0 quiet panic=0 rd.shell=0 blacklist=virtio_rng swiotlb=262144"
 sudo -E bash -c 'echo "${SE_PARMLINE}" > ${dst_mnt}/boot/parmfile'
-sudo -E /usr/bin/genprotimg
 sudo -E /usr/bin/genprotimg --host-key-document=${host_keys} \
 --output=${dst_mnt}/boot-se/se.img --image=${dst_mnt}/boot/${KERNEL_FILE} --ramdisk=${dst_mnt}/boot/${INITRD_FILE} \
 --cert=${cacert} --cert=${signcert} --crl=${crl} --parmfile=${dst_mnt}/boot/parmfile
