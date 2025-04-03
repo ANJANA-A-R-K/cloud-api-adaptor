@@ -8,15 +8,17 @@ elif [ "${ARCH}" != "s390x" ]; then
 fi
 echo "Building SE podvm image for $ARCH"
 
-if [ "$DEV" != "true" ]; then
+if [[ "$DEV" != "true" ]]; then
 	required_files=("DigiCertCA.crt" "ibm-z-host-key-gen2.crl" "ibm-z-host-key-signing-gen2.crt")
 	for file in "${required_files[@]}"; do
+		ls -latr /tmp/files/$file
+		echo "testing"
     		if [[ -f "/tmp/files/$file" ]]; then
         		echo "Found required file: $file"
     		else
         		echo "Missing required file: $file"
 			exit 1
-   		 fi
+   		fi
 	done
 	signcert="/tmp/files/ibm-z-host-key-signing-gen2.crt"
         cacert="/tmp/files/DigiCertCA.crt"
