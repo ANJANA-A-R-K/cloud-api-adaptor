@@ -11,7 +11,7 @@ echo "Building SE podvm image for $ARCH"
 if [[ "$DEV" != "true" ]]; then
 	required_files=("DigiCertCA.crt" "ibm-z-host-key-gen2.crl" "ibm-z-host-key-signing-gen2.crt")
 	for file in "${required_files[@]}"; do
-		ls -latr /tmp/files/$file
+		ls -latr /tmp/files/
 		echo "testing"
     		if [[ -f "/tmp/files/$file" ]]; then
         		echo "Found required file: $file"
