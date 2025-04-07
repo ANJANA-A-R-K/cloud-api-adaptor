@@ -7,8 +7,8 @@ elif [ "${ARCH}" != "s390x" ]; then
     exit 0
 fi
 echo "Building SE podvm image for $ARCH"
-echo "dev is :${DEV}"
-if [[ "${DEV}" != "true" ]]; then
+echo "dev is :${SE_VERIFY}"
+if [ "${SE_VERIFY}" = "true" ]; then
 	required_files=("DigiCertCA.crt" "ibm-z-host-key-gen2.crl" "ibm-z-host-key-signing-gen2.crt")
 	for file in "${required_files[@]}"; do
 		ls -latr /tmp/files/
@@ -207,7 +207,7 @@ echo "Creating SE boot image"
 export SE_PARMLINE="root=/dev/mapper/$LUKS_NAME rd.auto=1 rd.retry=30 console=ttysclp0 quiet panic=0 rd.shell=0 blacklist=virtio_rng swiotlb=262144"
 sudo -E bash -c 'echo "${SE_PARMLINE}" > ${dst_mnt}/boot/parmfile'
 
-if [ "${DEV}" != "true" ]; then
+if [ "${SE_VERIFY}" = "true" ]; then
 	sudo -E /usr/bin/genprotimg ${host_keys} \
 --output=${dst_mnt}/boot-se/se.img --image=${dst_mnt}/boot/${KERNEL_FILE} --ramdisk=${dst_mnt}/boot/${INITRD_FILE} \
 --cert=${cacert} --cert=${signcert} --crl=${crl} --parmfile=${dst_mnt}/boot/parmfile
