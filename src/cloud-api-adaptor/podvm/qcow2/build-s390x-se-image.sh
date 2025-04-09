@@ -8,6 +8,8 @@ elif [ "${ARCH}" != "s390x" ]; then
 fi
 echo "Building SE podvm image for $ARCH"
 
+SE_VERIFY=${SE_VERIFY:-true}
+
 if [ "${SE_VERIFY}" = "true" ]; then
 	required_files=("DigiCertCA.crt" "ibm-z-host-key-gen2.crl" "ibm-z-host-key-signing-gen2.crt")
 	for file in "${required_files[@]}"; do
