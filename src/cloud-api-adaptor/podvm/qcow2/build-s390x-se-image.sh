@@ -217,7 +217,7 @@ sudo -E /usr/bin/genprotimg \
     -r ${dst_mnt}/boot/${INITRD_FILE} \
     -p ${dst_mnt}/boot/parmfile \
     ${host_keys} \
-    ${EXTRA_ARGS}
+    ${EXTRA_ARGS} \
     -o ${dst_mnt}/boot-se/se.img
 
 # exit and throw an error if no se image was created
