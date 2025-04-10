@@ -207,9 +207,9 @@ echo "Creating SE boot image"
 export SE_PARMLINE="root=/dev/mapper/$LUKS_NAME rd.auto=1 rd.retry=30 console=ttysclp0 quiet panic=0 rd.shell=0 blacklist=virtio_rng swiotlb=262144"
 sudo -E bash -c 'echo "${SE_PARMLINE}" > ${dst_mnt}/boot/parmfile'
 if [ "${SE_VERIFY}" = "true" ]; then
-    EXTRA_ARGS = " --cert=${cacert} --cert=${signcert} --crl=${crl} "
+    EXTRA_ARGS=" --cert=${cacert} --cert=${signcert} --crl=${crl} "
 else
-    EXTRA_ARGS = " --no-verify "
+    EXTRA_ARGS=" --no-verify "
 fi
 
 sudo -E /usr/bin/genprotimg \
