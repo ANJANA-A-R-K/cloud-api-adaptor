@@ -207,18 +207,18 @@ echo "Creating SE boot image"
 export SE_PARMLINE="root=/dev/mapper/$LUKS_NAME rd.auto=1 rd.retry=30 console=ttysclp0 quiet panic=0 rd.shell=0 blacklist=virtio_rng swiotlb=262144"
 sudo -E bash -c 'echo "${SE_PARMLINE}" > ${dst_mnt}/boot/parmfile'
 if [ "${SE_VERIFY}" = "true" ]; then
-	sudo -E /usr/bin/genprotimg ${host_keys} \
---output=${dst_mnt}/boot-se/se.img --image=${dst_mnt}/boot/${KERNEL_FILE} --ramdisk=${dst_mnt}/boot/${INITRD_FILE} \
---cert=${cacert} --cert=${signcert} --crl=${crl} --parmfile=${dst_mnt}/boot/parmfile
+    EXTRA_ARGS = " --cert=${cacert} --cert=${signcert} --crl=${crl} "
 else
-	sudo -E /usr/bin/genprotimg \
+    EXTRA_ARGS = " --no-verify "
+fi
+
+sudo -E /usr/bin/genprotimg \
     -i ${dst_mnt}/boot/${KERNEL_FILE} \
     -r ${dst_mnt}/boot/${INITRD_FILE} \
     -p ${dst_mnt}/boot/parmfile \
-    --no-verify \
     ${host_keys} \
+    ${EXTRA_ARGS}
     -o ${dst_mnt}/boot-se/se.img
-fi
 
 # exit and throw an error if no se image was created
 [ ! -e ${dst_mnt}/boot-se/se.img ] && exit 1
