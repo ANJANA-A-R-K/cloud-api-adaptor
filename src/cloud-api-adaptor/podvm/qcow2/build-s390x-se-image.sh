@@ -29,22 +29,12 @@ if [ "${SE_VERIFY}" = "true" ]; then
     crl="${BASE_DIR}/ibm-z-host-key-gen2.crl"
 fi
 
-declare -a host_key_args=()
-shopt -s nullglob 
-found_hkd=0
-
 for file in "${BASE_DIR}"/*HKD.crt; do
     if [[ -f "$file" ]]; then
         echo "Found HKD file: \"$file\""
-        host_key_args+=("-k" "${file}")
-        found_hkd=1
+        host_keys+="-k ${file} "
     fi
 done
-shopt -u nullglob
-if [[ "$found_hkd" -eq 0 ]]; then
-    echo "No HKD files found in ${BASE_DIR}." >&2
-    exit 1
-fi
 rm /tmp/files/.dummy.crt || true
 
 if [ "${PODVM_DISTRO}" = "rhel" ]; then
@@ -231,7 +221,7 @@ sudo -E /usr/bin/genprotimg \
     -i ${dst_mnt}/boot/${KERNEL_FILE} \
     -r ${dst_mnt}/boot/${INITRD_FILE} \
     -p ${dst_mnt}/boot/parmfile \
-    "${host_key_args[@]}" \
+    "${host_keys}" \
     ${EXTRA_ARGS} \
     -o ${dst_mnt}/boot-se/se.img
 
