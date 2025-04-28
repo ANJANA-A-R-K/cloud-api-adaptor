@@ -10,27 +10,39 @@ echo "Building SE podvm image for $ARCH"
 
 SE_VERIFY=${SE_VERIFY:-true}
 
+readonly BASE_DIR="/tmp/files"
 if [ "${SE_VERIFY}" = "true" ]; then
 	required_files=("DigiCertCA.crt" "ibm-z-host-key-gen2.crl" "ibm-z-host-key-signing-gen2.crt")
 	for file in "${required_files[@]}"; do
-        if [[ -f "/tmp/files/$file" ]]; then
-            echo "Found required file: $file"
+        local_path="${BASE_DIR}/${file}"
+        if [[ -f "${local_path}" ]]; then
+            echo "Found required file: ${local_path}"
         else
-            echo "Missing required file: $file"
+            echo "Missing required file: ${local_path}" >&2
             exit 1
    		fi
-	done
-	signcert="/tmp/files/ibm-z-host-key-signing-gen2.crt"
-    cacert="/tmp/files/DigiCertCA.crt"
-    crl="/tmp/files/ibm-z-host-key-gen2.crl"
+    done
+    signcert="${BASE_DIR}/ibm-z-host-key-signing-gen2.crt"
+    cacert="${BASE_DIR}/DigiCertCA.crt"
+    crl="${BASE_DIR}/ibm-z-host-key-gen2.crl"
 fi
 
-for i in /tmp/files/*HKD.crt; do
-    if [[ -f "$i" ]]; then
-        echo "Found HKD file: \"$i\""
-        host_keys+="-k ${i} "
+declare -a host_key_args=()
+shopt -s nullglob 
+found_hkd=0
+
+for file in "${BASE_DIR}"/*HKD.crt; do
+    if [[ -f "$file" ]]; then
+        echo "Found HKD file: \"$file\""
+        host_key_args+=("-k" "${file}")
+        found_hkd=1
     fi
 done
+shopt -u nullglob
+if [[ "$found_hkd" -eq 0 ]]; then
+    echo "No HKD files found in ${BASE_DIR}." >&2
+    exit 1
+fi
 rm /tmp/files/.dummy.crt || true
 
 if [ "${PODVM_DISTRO}" = "rhel" ]; then
@@ -217,7 +229,7 @@ sudo -E /usr/bin/genprotimg \
     -i ${dst_mnt}/boot/${KERNEL_FILE} \
     -r ${dst_mnt}/boot/${INITRD_FILE} \
     -p ${dst_mnt}/boot/parmfile \
-    ${host_keys} \
+    "${host_key_args[@]}" \
     ${EXTRA_ARGS} \
     -o ${dst_mnt}/boot-se/se.img
 
