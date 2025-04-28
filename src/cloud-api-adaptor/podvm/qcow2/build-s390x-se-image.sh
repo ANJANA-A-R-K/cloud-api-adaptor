@@ -11,16 +11,18 @@ echo "Building SE podvm image for $ARCH"
 SE_VERIFY=${SE_VERIFY:-true}
 
 readonly BASE_DIR="/tmp/files"
+ls $BASE_DIR
 if [ "${SE_VERIFY}" = "true" ]; then
-	required_files=("DigiCertCA.crt" "ibm-z-host-key-gen2.crl" "ibm-z-host-key-signing-gen2.crt")
-	for file in "${required_files[@]}"; do
-        local_path="${BASE_DIR}/${file}"
+    required_files=("DigiCertCA.crt" "ibm-z-host-key-gen2.crl" "ibm-z-host-key-signing-gen2.crt")
+    for file in "${required_files[@]}"; do
+        local_path=${BASE_DIR}/${file}
+        ls $local_path
         if [[ -f "${local_path}" ]]; then
             echo "Found required file: ${local_path}"
         else
             echo "Missing required file: ${local_path}" >&2
             exit 1
-   		fi
+   	    fi
     done
     signcert="${BASE_DIR}/ibm-z-host-key-signing-gen2.crt"
     cacert="${BASE_DIR}/DigiCertCA.crt"
