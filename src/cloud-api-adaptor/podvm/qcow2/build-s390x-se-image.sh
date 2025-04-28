@@ -15,6 +15,7 @@ if [ "${SE_VERIFY}" = "true" ]; then
 	required_files=("DigiCertCA.crt" "ibm-z-host-key-gen2.crl" "ibm-z-host-key-signing-gen2.crt")
 	for file in "${required_files[@]}"; do
         local_path="${BASE_DIR}/${file}"
+        ls -latr $local_path
         if [[ -f "${local_path}" ]]; then
             echo "Found required file: ${local_path}"
         else
@@ -27,12 +28,14 @@ if [ "${SE_VERIFY}" = "true" ]; then
     crl="${BASE_DIR}/ibm-z-host-key-gen2.crl"
 fi
 
-for i in /tmp/files/*HKD.crt; do
+for i in ${BASE_DIR}/*HKD.crt; do
     if [[ -f "$i" ]]; then
         echo "Found HKD file: \"$i\""
         host_keys+="-k ${i} "
     fi
 done
+
+echo $host_keys
 rm /tmp/files/.dummy.crt || true
 
 if [ "${PODVM_DISTRO}" = "rhel" ]; then
@@ -215,6 +218,8 @@ else
     EXTRA_ARGS=" --no-verify "
 fi
 
+ls -latr $BASE_DIR
+echo $host_keys
 sudo -E /usr/bin/genprotimg \
     -i ${dst_mnt}/boot/${KERNEL_FILE} \
     -r ${dst_mnt}/boot/${INITRD_FILE} \
