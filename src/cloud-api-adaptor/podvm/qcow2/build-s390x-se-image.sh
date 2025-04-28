@@ -34,7 +34,7 @@ for i in ${BASE_DIR}/*HKD.crt; do
         host_keys+="-k ${i} "
     fi
 done
-
+[[ -z $host_keys ]] && echo "Didn't find host key files, please download host key files to 'files' folder " && exit 1
 echo $host_keys
 rm /tmp/files/.dummy.crt || true
 
@@ -213,9 +213,9 @@ export SE_PARMLINE="root=/dev/mapper/$LUKS_NAME rd.auto=1 rd.retry=30 console=tt
 sudo -E bash -c 'echo "${SE_PARMLINE}" > ${dst_mnt}/boot/parmfile'
 
 if [ "${SE_VERIFY}" = "true" ]; then
-    EXTRA_ARGS=" --cert=${cacert} --cert=${signcert} --crl=${crl} "
+    EXTRA_ARGS="--cert=${cacert} --cert=${signcert} --crl=${crl}"
 else
-    EXTRA_ARGS=" --no-verify "
+    EXTRA_ARGS="--no-verify"
 fi
 
 ls -latr $BASE_DIR
@@ -224,8 +224,8 @@ sudo -E /usr/bin/genprotimg \
     -i ${dst_mnt}/boot/${KERNEL_FILE} \
     -r ${dst_mnt}/boot/${INITRD_FILE} \
     -p ${dst_mnt}/boot/parmfile \
-    ${host_keys} \
     ${EXTRA_ARGS} \
+    ${host_keys} \
     -o ${dst_mnt}/boot-se/se.img
 
 # exit and throw an error if no se image was created
