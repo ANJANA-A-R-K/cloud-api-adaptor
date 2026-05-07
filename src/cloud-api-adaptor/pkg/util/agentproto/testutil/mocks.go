@@ -61,7 +61,6 @@ func (m *MockConn) SetWriteDeadline(t time.Time) error {
 }
 
 // MockAgentServiceClient implements pb.AgentServiceService for testing
-// Only includes methods actually used in redirector_test.go
 type MockAgentServiceClient struct {
 	pb.AgentServiceService
 	CreateContainerErr error
@@ -70,8 +69,10 @@ type MockAgentServiceClient struct {
 	ExecProcessErr     error
 	SignalProcessErr   error
 	WaitProcessErr     error
+	UpdateContainerErr error
 }
 
+// Container operations
 func (m *MockAgentServiceClient) CreateContainer(ctx context.Context, req *pb.CreateContainerRequest) (*emptypb.Empty, error) {
 	if m.CreateContainerErr != nil {
 		return nil, m.CreateContainerErr
@@ -93,6 +94,26 @@ func (m *MockAgentServiceClient) RemoveContainer(ctx context.Context, req *pb.Re
 	return &emptypb.Empty{}, nil
 }
 
+func (m *MockAgentServiceClient) UpdateContainer(ctx context.Context, req *pb.UpdateContainerRequest) (*emptypb.Empty, error) {
+	if m.UpdateContainerErr != nil {
+		return nil, m.UpdateContainerErr
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) StatsContainer(ctx context.Context, req *pb.StatsContainerRequest) (*pb.StatsContainerResponse, error) {
+	return &pb.StatsContainerResponse{}, nil
+}
+
+func (m *MockAgentServiceClient) PauseContainer(ctx context.Context, req *pb.PauseContainerRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) ResumeContainer(ctx context.Context, req *pb.ResumeContainerRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+// Process operations
 func (m *MockAgentServiceClient) ExecProcess(ctx context.Context, req *pb.ExecProcessRequest) (*emptypb.Empty, error) {
 	if m.ExecProcessErr != nil {
 		return nil, m.ExecProcessErr
@@ -114,6 +135,7 @@ func (m *MockAgentServiceClient) WaitProcess(ctx context.Context, req *pb.WaitPr
 	return &pb.WaitProcessResponse{Status: 0}, nil
 }
 
+// Stream operations
 func (m *MockAgentServiceClient) WriteStdin(ctx context.Context, req *pb.WriteStreamRequest) (*pb.WriteStreamResponse, error) {
 	return &pb.WriteStreamResponse{Len: uint32(len(req.Data))}, nil
 }
@@ -122,10 +144,19 @@ func (m *MockAgentServiceClient) ReadStdout(ctx context.Context, req *pb.ReadStr
 	return &pb.ReadStreamResponse{Data: []byte("stdout data")}, nil
 }
 
+func (m *MockAgentServiceClient) ReadStderr(ctx context.Context, req *pb.ReadStreamRequest) (*pb.ReadStreamResponse, error) {
+	return &pb.ReadStreamResponse{Data: []byte("stderr data")}, nil
+}
+
 func (m *MockAgentServiceClient) CloseStdin(ctx context.Context, req *pb.CloseStdinRequest) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }
 
+func (m *MockAgentServiceClient) TtyWinResize(ctx context.Context, req *pb.TtyWinResizeRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+// Network operations
 func (m *MockAgentServiceClient) UpdateInterface(ctx context.Context, req *pb.UpdateInterfaceRequest) (*protocols.Interface, error) {
 	return &protocols.Interface{}, nil
 }
@@ -134,12 +165,110 @@ func (m *MockAgentServiceClient) UpdateRoutes(ctx context.Context, req *pb.Updat
 	return &pb.Routes{}, nil
 }
 
+func (m *MockAgentServiceClient) ListInterfaces(ctx context.Context, req *pb.ListInterfacesRequest) (*pb.Interfaces, error) {
+	return &pb.Interfaces{}, nil
+}
+
+func (m *MockAgentServiceClient) ListRoutes(ctx context.Context, req *pb.ListRoutesRequest) (*pb.Routes, error) {
+	return &pb.Routes{}, nil
+}
+
+func (m *MockAgentServiceClient) AddARPNeighbors(ctx context.Context, req *pb.AddARPNeighborsRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+// Sandbox operations
 func (m *MockAgentServiceClient) CreateSandbox(ctx context.Context, req *pb.CreateSandboxRequest) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }
 
 func (m *MockAgentServiceClient) DestroySandbox(ctx context.Context, req *pb.DestroySandboxRequest) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
+}
+
+// Mount operations
+func (m *MockAgentServiceClient) UpdateEphemeralMounts(ctx context.Context, req *pb.UpdateEphemeralMountsRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) RemoveStaleVirtiofsShareMounts(ctx context.Context, req *pb.RemoveStaleVirtiofsShareMountsRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+// IPTables operations
+func (m *MockAgentServiceClient) GetIPTables(ctx context.Context, req *pb.GetIPTablesRequest) (*pb.GetIPTablesResponse, error) {
+	return &pb.GetIPTablesResponse{}, nil
+}
+
+func (m *MockAgentServiceClient) SetIPTables(ctx context.Context, req *pb.SetIPTablesRequest) (*pb.SetIPTablesResponse, error) {
+	return &pb.SetIPTablesResponse{}, nil
+}
+
+// Memory operations
+func (m *MockAgentServiceClient) OnlineCPUMem(ctx context.Context, req *pb.OnlineCPUMemRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) MemHotplugByProbe(ctx context.Context, req *pb.MemHotplugByProbeRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) MemAgentMemcgSet(ctx context.Context, req *pb.MemAgentMemcgConfig) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) MemAgentCompactSet(ctx context.Context, req *pb.MemAgentCompactConfig) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+// Storage operations
+func (m *MockAgentServiceClient) GetVolumeStats(ctx context.Context, req *pb.VolumeStatsRequest) (*pb.VolumeStatsResponse, error) {
+	return &pb.VolumeStatsResponse{}, nil
+}
+
+func (m *MockAgentServiceClient) ResizeVolume(ctx context.Context, req *pb.ResizeVolumeRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) AddSwap(ctx context.Context, req *pb.AddSwapRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) AddSwapPath(ctx context.Context, req *pb.AddSwapPathRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+// Miscellaneous operations
+func (m *MockAgentServiceClient) GetMetrics(ctx context.Context, req *pb.GetMetricsRequest) (*pb.Metrics, error) {
+	return &pb.Metrics{}, nil
+}
+
+func (m *MockAgentServiceClient) ReseedRandomDev(ctx context.Context, req *pb.ReseedRandomDevRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) GetGuestDetails(ctx context.Context, req *pb.GuestDetailsRequest) (*pb.GuestDetailsResponse, error) {
+	return &pb.GuestDetailsResponse{}, nil
+}
+
+func (m *MockAgentServiceClient) SetGuestDateTime(ctx context.Context, req *pb.SetGuestDateTimeRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) CopyFile(ctx context.Context, req *pb.CopyFileRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) GetOOMEvent(ctx context.Context, req *pb.GetOOMEventRequest) (*pb.OOMEvent, error) {
+	return &pb.OOMEvent{}, nil
+}
+
+func (m *MockAgentServiceClient) SetPolicy(ctx context.Context, req *pb.SetPolicyRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (m *MockAgentServiceClient) GetDiagnosticData(ctx context.Context, req *pb.GetDiagnosticDataRequest) (*pb.GetDiagnosticDataResponse, error) {
+	return &pb.GetDiagnosticDataResponse{}, nil
 }
 
 // MockHealthServiceClient implements pb.HealthService for testing
@@ -165,3 +294,5 @@ func (m *MockHealthServiceClient) Version(ctx context.Context, req *pb.CheckRequ
 		AgentVersion: "2.0.0",
 	}, nil
 }
+
+// Made with Bob
